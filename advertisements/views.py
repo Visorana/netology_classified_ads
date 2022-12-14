@@ -19,10 +19,10 @@ class AdvertisementViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         if request.user.is_anonymous:
-            queryset = Advertisement.objects.filter(Q(status='OPEN') | Q(status='CLOSED')).all()
+            queryset = self.filter_queryset(Advertisement.objects.filter(Q(status='OPEN') | Q(status='CLOSED')).all())
         else:
-            queryset = Advertisement.objects.filter(Q(creator=request.user) | Q(status='OPEN') |
-                                                    Q(status='CLOSED')).all()
+            queryset = self.filter_queryset(Advertisement.objects.filter(Q(creator=request.user) | Q(status='OPEN') |
+                                                                         Q(status='CLOSED')).all())
         serializer = AdvertisementSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -36,8 +36,8 @@ class AdvertisementViewSet(ModelViewSet):
             request.user.favourite_advertisements.remove(Advertisement.objects.get(id=pk))
             return HttpResponse('Removed from favourites.')
 
-    @action(methods=['get'], detail=False, url_path='favourites', permission_classes=[IsAuthenticated])
+    @action(methods=['GET'], detail=False, url_path='favourites', permission_classes=[IsAuthenticated])
     def favourites(self, request):
-        queryset = request.user.favourite_advertisements.all()
+        queryset = self.filter_queryset(request.user.favourite_advertisements.all())
         serializer = AdvertisementSerializer(queryset, many=True)
         return Response(serializer.data)
